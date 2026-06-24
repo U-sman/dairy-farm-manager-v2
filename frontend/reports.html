@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Reports & Analytics — Usman Dairy Farm</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">📊 Analytics & Reports</div>
+    <div class="top-actions">
+      <a class="btn ghost" href="index.html">Dashboard</a>
+      <a class="btn ghost" href="health.html">Health</a>
+      <a class="btn ghost" href="admin.html">Admin</a>
+      <button class="btn ghost" onclick="logout()">⏻</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Summary -->
+    <section class="summary-cards">
+      <div class="card">
+        <h3>Total Milk (All Time)</h3>
+        <div id="totalMilkAll" class="stat-num">—</div>
+        <small class="small" id="totalMilkAvgDay"></small>
+      </div>
+      <div class="card">
+        <h3>Total Revenue</h3>
+        <div id="totalRev" class="stat-num">—</div>
+        <small class="small" id="totalRevAvg"></small>
+      </div>
+      <div class="card">
+        <h3>Total Expenses</h3>
+        <div id="totalExp" class="stat-num">—</div>
+        <small class="small" id="totalExpAvg"></small>
+      </div>
+      <div class="card">
+        <h3>Total Profit</h3>
+        <div id="totalProfit" class="stat-num">—</div>
+        <small class="small" id="profitMargin"></small>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="card">
+      <h3>Date Range Filters</h3>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr auto;gap:12px;align-items:end">
+        <label>From<input id="reportStartDate" type="date"/></label>
+        <label>To<input id="reportEndDate" type="date"/></label>
+        <button onclick="reloadReports()" class="btn">Apply</button>
+      </div>
+    </section>
+
+    <!-- Per Cow Annual Summary -->
+    <section class="card">
+      <h3>Per Cow Summary</h3>
+      <div id="perCowSummary" style="display:grid;gap:16px"></div>
+    </section>
+
+    <!-- Herd Health Score -->
+    <section class="card">
+      <h3>Herd Health Overview</h3>
+      <div class="summary-cards">
+        <div class="card">
+          <h3>Active Cows</h3>
+          <div id="activeCount" class="stat-num">—</div>
+        </div>
+        <div class="card">
+          <h3>Dry/Pregnant</h3>
+          <div id="dryCount" class="stat-num">—</div>
+        </div>
+        <div class="card">
+          <h3>Avg Age</h3>
+          <div id="avgAge" class="stat-num">—</div>
+        </div>
+        <div class="card">
+          <h3>Low Yield Cows</h3>
+          <div id="lowYieldCount" class="stat-num">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="card">
+      <h3>Monthly Trends</h3>
+      <div style="height:250px"><canvas id="trendsChart"></canvas></div>
+    </section>
+
+    <section class="card">
+      <h3>Expense Categories</h3>
+      <div style="height:250px"><canvas id="expCategoryChart"></canvas></div>
+    </section>
+
+    <section class="card">
+      <h3>Cow Productivity Ranking</h3>
+      <div id="productivityRanking"></div>
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="api.js"></script>
+  <script src="reports.js"></script>
+</body>
+</html>

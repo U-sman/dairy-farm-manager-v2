@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Health Records — Usman Dairy Farm</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">🏥 Health Records</div>
+    <div class="top-actions">
+      <a class="btn ghost" href="index.html">Dashboard</a>
+      <a class="btn ghost" href="admin.html">Admin</a>
+      <a class="btn ghost" href="reports.html">Reports</a>
+      <button class="btn ghost" onclick="logout()">⏻</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Alerts -->
+    <section class="card">
+      <h3>🔔 Upcoming Health Events (30 days)</h3>
+      <div id="upcomingBox" style="display:grid;gap:8px"></div>
+    </section>
+
+    <!-- Add Health Record -->
+    <section class="card">
+      <h3>Add Health Record</h3>
+      <form id="healthForm" class="form-grid">
+        <input type="hidden" id="healthId"/>
+        <label>Cow *<select id="healthCow" required><option value="">--select--</option></select></label>
+        <label>Date *<input id="healthDate" type="date" required/></label>
+        <label>Type *
+          <select id="healthType" required>
+            <option value="">--select--</option>
+            <option value="vaccination">Vaccination</option>
+            <option value="treatment">Treatment</option>
+            <option value="checkup">Checkup</option>
+            <option value="deworming">Deworming</option>
+          </select>
+        </label>
+        <label>Description *<input id="healthDesc" required placeholder="e.g. Annual vaccination"/></label>
+        <label>Medicine/Vaccine<input id="healthMed" placeholder="e.g. FMD vaccine"/></label>
+        <label>Veterinarian<input id="healthVet" placeholder="Vet name"/></label>
+        <label>Next Due Date<input id="healthNext" type="date"/></label>
+        <label>Cost (Rs)<input id="healthCost" type="number" step="1" min="0"/></label>
+        <label>Notes<textarea id="healthNotes" placeholder="Additional notes..."></textarea></label>
+        <div class="form-actions">
+          <button type="submit" class="btn">Save Record</button>
+          <button id="healthReset" type="button" class="btn ghost">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Health Records List -->
+    <section class="card">
+      <h3>Health Records</h3>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr auto;gap:12px;margin-bottom:16px;align-items:end">
+        <label>Filter Cow<select id="filterCow"><option value="">--all--</option></select></label>
+        <label>Filter Type
+          <select id="filterType">
+            <option value="">--all--</option>
+            <option value="vaccination">Vaccination</option>
+            <option value="treatment">Treatment</option>
+            <option value="checkup">Checkup</option>
+            <option value="deworming">Deworming</option>
+          </select>
+        </label>
+        <button onclick="applyHealthFilter()" class="btn">Filter</button>
+      </div>
+      <div id="healthList" style="display:grid;gap:8px"></div>
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="api.js"></script>
+  <script src="health.js"></script>
+</body>
+</html>

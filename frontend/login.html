@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Login — Usman Dairy Farm</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json"/>
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .login-box { width:100%; max-width:400px; padding:40px 32px; }
+    .login-logo { text-align:center; margin-bottom:32px; }
+    .login-logo .icon { font-size:56px; display:block; }
+    .login-logo h1 { margin:8px 0 4px; font-size:22px; color:var(--accent); }
+    .login-logo p { margin:0; color:var(--muted); font-size:14px; }
+    .login-field { margin-bottom:16px; }
+    .login-field label { display:block; font-size:13px; font-weight:500; margin-bottom:6px; }
+    .login-field input { width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid rgba(0,0,0,.1); font-size:15px; }
+    .login-btn { width:100%; padding:14px; font-size:16px; border-radius:12px; margin-top:8px; }
+    .login-error { color:var(--danger); font-size:13px; margin-top:8px; text-align:center; min-height:20px; }
+    .setup-note { text-align:center; font-size:13px; color:var(--muted); margin-top:20px; }
+    .divider { border:none; border-top:1px solid rgba(0,0,0,.07); margin:20px 0; }
+  </style>
+</head>
+<body>
+  <div class="card login-box">
+    <div class="login-logo">
+      <span class="icon">🐄</span>
+      <h1>Usman Dairy Farm</h1>
+      <p>Farm Management System</p>
+    </div>
+    <div id="loginSection">
+      <div class="login-field">
+        <label>Username</label>
+        <input id="username" type="text" placeholder="Enter username" autocomplete="username"/>
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <input id="password" type="password" placeholder="Enter password" autocomplete="current-password"/>
+      </div>
+      <button class="btn login-btn" onclick="doLogin()">Login</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+
+    <div id="setupSection" style="display:none">
+      <p style="text-align:center;color:var(--muted);font-size:14px;margin-bottom:20px">
+        First time setup — create your admin account
+      </p>
+      <div class="login-field">
+        <label>Admin Username</label>
+        <input id="setupUser" type="text" placeholder="e.g. usman"/>
+      </div>
+      <div class="login-field">
+        <label>Admin Password</label>
+        <input id="setupPass" type="password" placeholder="Choose a strong password"/>
+      </div>
+      <button class="btn login-btn" onclick="doSetup()">Create Account</button>
+      <div class="login-error" id="setupError"></div>
+    </div>
+
+    <div class="setup-note" id="setupNote"></div>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+    // Check if already logged in
+    if (localStorage.getItem('dm_token')) window.location.href = 'index.html';
+
+    // Check if setup is needed
+    async function checkSetup() {
+      try {
+        const res = await fetch(API + '/api/auth/check');
+        const data = await res.json();
+        if (!data.setupDone) {
+          document.getElementById('loginSection').style.display = 'none';
+          document.getElementById('setupSection').style.display = 'block';
+        }
+      } catch(e) {
+        document.getElementById('setupNote').textContent = 'Cannot connect to server. Check your connection.';
+      }
+    }
+    checkSetup();
+
+    async function doLogin() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      if (!username || !password) { showErr('loginError','Enter username and password'); return; }
+      try {
+        const res = await fetch(API + '/api/auth/login', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showErr('loginError', data.error || 'Login failed'); return; }
+        localStorage.setItem('dm_token', data.token);
+        localStorage.setItem('dm_role', data.role);
+        localStorage.setItem('dm_username', data.username);
+        window.location.href = 'index.html';
+      } catch(e) {
+        showErr('loginError', 'Server connection failed');
+      }
+    }
+
+    async function doSetup() {
+      const username = document.getElementById('setupUser').value.trim();
+      const password = document.getElementById('setupPass').value;
+      if (!username || !password) { showErr('setupError','Fill all fields'); return; }
+      if (password.length < 6) { showErr('setupError','Password must be 6+ characters'); return; }
+      try {
+        const res = await fetch(API + '/api/auth/setup', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showErr('setupError', data.error || 'Setup failed'); return; }
+        localStorage.setItem('dm_token', data.token);
+        localStorage.setItem('dm_role', data.role);
+        localStorage.setItem('dm_username', data.username);
+        window.location.href = 'index.html';
+      } catch(e) {
+        showErr('setupError', 'Server connection failed');
+      }
+    }
+
+    function showErr(id, msg) {
+      document.getElementById(id).textContent = msg;
+      setTimeout(()=>{ document.getElementById(id).textContent=''; }, 4000);
+    }
+
+    // Allow Enter key
+    document.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  </script>
+</body>
+</html>

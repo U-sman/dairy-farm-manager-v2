@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Usman Dairy Farm — Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <meta name="theme-color" content="#0891b2"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(reg => console.log('✓ SW registered')).catch(e => console.log('SW error:', e));
+    }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">🐄 Usman Dairy Farm</div>
+    <div class="top-actions">
+      <label class="toggle"><input id="darkToggle" type="checkbox"/><span>Dark</span></label>
+      <a class="btn ghost" href="health.html">Health</a>
+      <a class="btn ghost" href="reports.html">Reports</a>
+      <a class="btn" href="admin.html">Admin</a>
+      <button class="btn ghost" onclick="logout()" title="Logout">⏻</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Summary Cards -->
+    <section class="summary-cards">
+      <div class="card">
+        <h3>Total Cows</h3>
+        <div id="totalCows" class="stat-num">—</div>
+        <small id="cowBreakdown" class="small"></small>
+      </div>
+      <div class="card">
+        <h3>Milk Today</h3>
+        <div id="totalMilkToday" class="stat-num">—</div>
+        <small id="milkChange" class="small"></small>
+      </div>
+      <div class="card profit-card">
+        <h3>This Month P&L</h3>
+        <div id="monthProfit" class="stat-num">—</div>
+        <small id="monthPLBreakdown" class="small"></small>
+      </div>
+      <div class="card">
+        <h3>⭐ Top Cow</h3>
+        <div id="topCow" class="stat-num">—</div>
+        <small id="topCowAvg" class="small"></small>
+      </div>
+    </section>
+
+    <!-- Alerts -->
+    <section class="card">
+      <h3>🔔 Alerts <span id="alertCount" class="badge"></span></h3>
+      <div id="alertsBox" class="alerts"></div>
+    </section>
+
+    <!-- Cow Grid -->
+    <section class="card">
+      <h3>All Cows</h3>
+      <div id="cowGrid" class="grid"></div>
+    </section>
+
+    <!-- Today's Summary -->
+    <section class="card">
+      <h3>Today's Milk <span class="live-badge">Live</span></h3>
+      <div id="todayTotal" class="stat-num">— L</div>
+      <div id="todayBreakdown" class="small" style="margin-top:8px"></div>
+    </section>
+
+    <!-- Month vs Last Month -->
+    <section class="summary-cards">
+      <div class="card">
+        <h3>This Month Revenue</h3>
+        <div id="thisMonthRev" class="stat-num">—</div>
+        <small id="thisMonthRevVs" class="small"></small>
+      </div>
+      <div class="card">
+        <h3>This Month Expense</h3>
+        <div id="thisMonthExp" class="stat-num">—</div>
+        <small id="thisMonthExpVs" class="small"></small>
+      </div>
+      <div class="card">
+        <h3>Milk Rate</h3>
+        <div id="currentRate" class="stat-num">—</div>
+        <small class="small">Rs per litre</small>
+      </div>
+    </section>
+
+    <!-- Daily Milk Chart -->
+    <section class="card">
+      <h3>Daily Milk — Last 30 Days</h3>
+      <div style="height:200px"><canvas id="dailyMilkChart"></canvas></div>
+    </section>
+
+    <!-- Revenue vs Expense -->
+    <section class="card">
+      <h3>Revenue vs Expense (Monthly)</h3>
+      <div style="height:200px"><canvas id="revExpChart"></canvas></div>
+    </section>
+
+    <!-- Two charts side by side on desktop -->
+    <div class="two-col">
+      <section class="card">
+        <h3>Expense Breakdown</h3>
+        <div style="height:200px"><canvas id="expensePieChart"></canvas></div>
+      </section>
+      <section class="card">
+        <h3>Cow Comparison (30d avg)</h3>
+        <div style="height:200px"><canvas id="cowComparison"></canvas></div>
+      </section>
+    </div>
+
+    <!-- Weekday Averages -->
+    <section class="controls card">
+      <h3>Weekday Averages</h3>
+      <div class="row" style="flex-wrap:wrap;gap:8px">
+        <select id="weekdayRange">
+          <option value="last30">Last 30 days</option>
+          <option value="thisMonth">This month</option>
+          <option value="lastMonth">Last month</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input id="startDate" type="date" style="display:none"/>
+        <input id="endDate" type="date" style="display:none"/>
+        <button id="updateRanges" class="btn">Update</button>
+      </div>
+      <div id="weekdayList" style="margin:12px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px"></div>
+      <div style="height:160px"><canvas id="weekdayChart"></canvas></div>
+    </section>
+  </main>
+
+  <!-- Cow Detail Modal -->
+  <div id="cowDetailsModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeCowModal()">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalCowName">Cow Details</h3>
+        <button class="btn ghost" onclick="closeCowModal()">✕</button>
+      </div>
+      <div id="modalCowDetails"></div>
+      <div style="height:220px;margin-top:16px"><canvas id="cowHistoryChart"></canvas></div>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="home.js"></script>
+</body>
+</html>

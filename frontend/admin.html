@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin — Usman Dairy Farm</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">🐄 Admin Panel</div>
+    <div class="top-actions">
+      <a class="btn ghost" href="index.html">Dashboard</a>
+      <a class="btn ghost" href="health.html">Health</a>
+      <a class="btn ghost" href="reports.html">Reports</a>
+      <button class="btn ghost" onclick="logout()">⏻</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Cow Form -->
+    <section class="card">
+      <h3>Add / Edit Cow</h3>
+      <form id="cowForm" class="form-grid">
+        <input type="hidden" id="cowId"/>
+        <label>Name *<input id="cowName" required placeholder="e.g. Bella"/></label>
+        <label>Breed *<input id="cowBreed" required placeholder="e.g. Holstein"/></label>
+        <label>Birth Date<input id="cowBirth" type="date"/></label>
+        <label>Age (years)<input id="cowAge" type="number" min="0" step="0.5"/></label>
+        <label>Weight (kg)<input id="cowWeight" type="number" min="0"/></label>
+        <label>Status
+          <select id="cowStatus">
+            <option value="active">Active</option>
+            <option value="dry">Dry</option>
+            <option value="pregnant">Pregnant</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </label>
+        <label>Lactation #<input id="cowLactation" type="number" min="0"/></label>
+        <label>Calving Date<input id="cowCalving" type="date"/></label>
+        <label>Pregnancy Date<input id="cowPregnancy" type="date"/></label>
+        <label>Image URL<input id="cowImage" placeholder="https://..."/></label>
+        <label>Notes<textarea id="cowNotes" placeholder="Any notes..."></textarea></label>
+        <div class="form-actions">
+          <button type="submit" class="btn">Save Cow</button>
+          <button id="cowReset" type="button" class="btn ghost">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Milk Form -->
+    <section class="card">
+      <h3>Add Milk Entry</h3>
+      <form id="milkForm" class="form-grid">
+        <input type="hidden" id="milkId"/>
+        <label>Cow *<select id="milkCow" required><option value="">--select--</option></select></label>
+        <label>Date *<input id="milkDate" type="date" required/></label>
+        <label>Morning (L)<input id="milkMorning" type="number" step="0.1" min="0"/></label>
+        <label>Evening (L)<input id="milkEvening" type="number" step="0.1" min="0"/></label>
+        <label>Fat %<input id="milkFat" type="number" step="0.1" min="0" placeholder="Optional"/></label>
+        <label>SNF %<input id="milkSNF" type="number" step="0.1" min="0" placeholder="Optional"/></label>
+        <label>Buyer<select id="milkBuyer"><option value="">--none--</option></select></label>
+        <div class="hint" style="grid-column:1/-1">Last 3 entries: <span id="last3">-</span></div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Save Entry</button>
+          <button id="milkReset" type="button" class="btn ghost">Reset</button>
+          <button id="autoFillLast" type="button" class="btn ghost">Auto-fill Last</button>
+        </div>
+      </form>
+
+      <h4 style="margin-top:24px">Bulk Add Milk</h4>
+      <form id="bulkMilkForm" class="form-grid">
+        <label style="grid-column:1/-1">Select Cows<div id="bulkCowList" class="checkbox-grid"></div></label>
+        <label>Date *<input id="bulkDate" type="date" required/></label>
+        <label>Morning (L)<input id="bulkMorning" type="number" step="0.1" min="0"/></label>
+        <label>Evening (L)<input id="bulkEvening" type="number" step="0.1" min="0"/></label>
+        <div class="form-actions">
+          <button type="submit" class="btn">Add Bulk</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Expense Form -->
+    <section class="card">
+      <h3>Add Expense</h3>
+      <form id="expenseForm" class="form-grid">
+        <input type="hidden" id="expenseId"/>
+        <label>Cow<select id="expenseCow"><option value="">--select--</option></select></label>
+        <label>Date *<input id="expenseDate" type="date" required/></label>
+        <label>Type
+          <select id="expenseType">
+            <option value="feed">Feed</option>
+            <option value="medicine">Medicine</option>
+            <option value="equipment">Equipment</option>
+            <option value="labor">Labor</option>
+            <option value="misc">Misc</option>
+          </select>
+        </label>
+        <label>Amount (Rs) *<input id="expenseAmount" type="number" step="1" required/></label>
+        <label>Note<textarea id="expenseNote" placeholder="Details..."></textarea></label>
+        <div class="hint">Last used: <span id="lastExpense">-</span></div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Save Expense</button>
+          <button id="expenseReset" type="button" class="btn ghost">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Milk Rate -->
+    <section class="card">
+      <h3>Milk Price (Rs / litre)</h3>
+      <form id="rateForm" class="form-grid">
+        <label>Current Rate<input id="milkRateInput" type="number" step="0.01" min="0" required/></label>
+        <div class="form-actions"><button type="submit" class="btn">Save Rate</button></div>
+      </form>
+      <div id="rateHistory" class="small" style="margin-top:12px"></div>
+    </section>
+
+    <!-- Buyers -->
+    <section class="card">
+      <h3>Milk Buyers</h3>
+      <form id="buyerForm" class="form-grid">
+        <input type="hidden" id="buyerId"/>
+        <label>Name *<input id="buyerName" required placeholder="Buyer name"/></label>
+        <label>Phone<input id="buyerPhone" type="tel" placeholder="03xx-xxxxxxx"/></label>
+        <label>Address<input id="buyerAddress" placeholder="Address"/></label>
+        <label>Default Rate<input id="buyerRate" type="number" step="0.01" placeholder="Rs/litre"/></label>
+        <label>Notes<textarea id="buyerNotes" placeholder="Notes..."></textarea></label>
+        <div class="form-actions">
+          <button type="submit" class="btn">Save Buyer</button>
+          <button id="buyerReset" type="button" class="btn ghost">Reset</button>
+        </div>
+      </form>
+      <div id="buyerList" style="margin-top:16px"></div>
+    </section>
+
+    <!-- Filters & Reports -->
+    <section class="card">
+      <h3>Filter Data</h3>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr auto;gap:12px;align-items:end">
+        <label>From<input id="filterStartDate" type="date"/></label>
+        <label>To<input id="filterEndDate" type="date"/></label>
+        <button id="applyFilter" class="btn">Apply</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Export Reports</h3>
+      <div class="form-actions" style="flex-wrap:wrap">
+        <button onclick="milkReportPDF()" class="btn">📄 Milk PDF</button>
+        <button onclick="expenseReportPDF()" class="btn">📄 Expense PDF</button>
+        <button onclick="exportMilkExcel()" class="btn ghost">📊 Milk Excel</button>
+        <button onclick="exportExpenseExcel()" class="btn ghost">📊 Expense Excel</button>
+        <button onclick="monthlyReportPDF()" class="btn">📄 Monthly Summary PDF</button>
+      </div>
+    </section>
+
+    <!-- Backup -->
+    <section class="card">
+      <h3>Backup & Restore</h3>
+      <div class="form-actions" style="flex-wrap:wrap">
+        <button onclick="downloadBackup()" class="btn">⬇ Download Backup</button>
+        <label class="btn ghost" style="cursor:pointer">
+          ⬆ Restore Backup <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreBackup(this)"/>
+        </label>
+      </div>
+      <div id="backupStatus" class="hint" style="margin-top:8px"></div>
+    </section>
+
+    <!-- Data Lists -->
+    <section class="card">
+      <h3>Data Lists</h3>
+      <div id="adminLists"></div>
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Duplicate warning modal -->
+  <div id="dupModal" class="modal-overlay" style="display:none">
+    <div class="modal-box" style="max-width:400px">
+      <h3>⚠️ Duplicate Entry</h3>
+      <p id="dupMsg"></p>
+      <div class="form-actions">
+        <button class="btn" onclick="confirmOverwrite()">Overwrite</button>
+        <button class="btn ghost" onclick="document.getElementById('dupModal').style.display='none'">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

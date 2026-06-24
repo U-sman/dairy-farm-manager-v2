@@ -1,0 +1,14 @@
+{
+  "name": "usman-dairy-frontend",
+  "version": "2.0.0",
+  "description": "Usman Dairy Farm - Frontend (Vanilla JS)",
+  "private": true,
+  "scripts": {
+    "start": "python -m http.server 8000 --directory frontend",
+    "dev": "python -m http.server 8000 --directory frontend"
+  },
+  "keywords": ["dairy", "farm", "management"],
+  "author": "Your Name",
+  "license": "MIT",
+  "note": "This frontend is pure vanilla JavaScript with no build process. Deploy to GitHub Pages directly."
+}
