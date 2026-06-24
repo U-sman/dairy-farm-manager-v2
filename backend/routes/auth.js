@@ -11,13 +11,15 @@ router.post('/setup', async (req, res) => {
     const count = await User.countDocuments();
     if (count > 0) return res.status(400).json({ error: 'Setup already done' });
     const hash = await bcrypt.hash(req.body.password, 10);
+    
+    // Fixed: Removed the custom _id string so MongoDB auto-generates a valid ObjectId
     const user = await User.create({
-      _id: 'admin',
       username: req.body.username || 'admin',
       password: hash,
       role: 'admin',
       farmName: 'Usman Dairy Farm'
     });
+    
     const token = jwt.sign({ id: user._id, role: user.role, username: user.username }, SECRET, { expiresIn: '30d' });
     res.json({ token, role: user.role, username: user.username });
   } catch (err) {
@@ -43,8 +45,9 @@ router.post('/login', async (req, res) => {
 router.post('/add-viewer', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
+    
+    // Fixed: Removed the custom 'v' + Date.now() string for safety as well
     const user = await User.create({
-      _id: 'v' + Date.now(),
       username: req.body.username,
       password: hash,
       role: 'viewer'
