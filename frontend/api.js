@@ -1,5 +1,5 @@
 /* api.js — central API helper for all frontend pages */
-const API = 'https://dairy-farm-manager-v2-production.up.railway.app';
+const API = '';
 function getToken() { return localStorage.getItem('dm_token'); }
 function getRole()  { return localStorage.getItem('dm_role'); }
 
